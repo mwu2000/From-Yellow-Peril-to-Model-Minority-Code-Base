@@ -1,0 +1,199 @@
+---
+title: "Clustering Plots"
+author: "Maggie Wu"
+date: "7/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+clustering_data <- read_csv("clustering_data.csv") %>%
+  rename("xcoord" = x, "ycoord" = y) %>%
+  mutate(cluster = as.factor(cluster))
+head(clustering_data)
+```
+
+```{r}
+ggplot(data = clustering_data, aes(x = xcoord, 
+                                   y = ycoord,
+                                   color = cluster))+
+  geom_point(size = 0.5, alpha = 0.5)
+```
+```{r}
+prop_chart <- clustering_data %>% 
+  group_by(cluster)%>%
+  summarise("prop_yp" = sum(as.numeric(yellow_peril))/n())
+ggplot(data = prop_chart)+
+  geom_col(aes(fill = cluster, x = cluster, y = prop_yp))
+```
+
+```{r}
+ggplot(data = clustering_data, aes(x = xcoord, 
+                                   y = ycoord,
+                                   color = factor(Label),
+                shape = factor(Label)))+
+  geom_point( size = 0.5)
+```
+
+
+```{r}
+ggplot(data = clustering_data, aes(x = xcoord,y = ycoord,
+                                   color = factor(yellow_peril), 
+                                   shape = factor(yellow_peril)))+
+  geom_point( size = 0.5)
+```
+```{r}
+ggplot(clustering_data) +
+  geom_bar(aes(x = cluster, fill = Label))
+```
+```{r}
+yellow_peril_data <- read_csv("yellow_peril_data.csv")
+```
+
+
+```{r}
+all_data <- left_join(clustering_data, yellow_peril_data, by = c('tweet_id',
+                                                                 'text',
+                                                                 "num_likes", "date", "author", "Label"))
+```
+
+```{r}
+ggplot(data = all_data, aes(x = cluster, y = cosine, fill = cluster))+
+  geom_violin()+
+  geom_boxplot(width = 0.1)
+#lower is better
+```
+
+
+```{r}
+ggplot(data = all_data, aes(x = Label, y = cosine, fill = Label))+
+  geom_violin()+
+  geom_boxplot(width = 0.1)
+```
+
+```{r}
+mm_data <- read_csv("mm_data.csv")
+allmm_data <- left_join(clustering_data, mm_data, by = c('tweet_id',
+                                                                 'text',
+                                                                 "num_likes", "date", "author", "Label"))
+```
+```{r}
+ggplot(data = allmm_data, aes(x = Label, y = cosine, fill = Label))+
+  geom_violin()+
+  geom_boxplot(width = 0.1)
+
+ggplot(data = all_data, aes(x = cluster, y = cosine, fill = cluster))+
+  geom_violin()+
+  geom_boxplot(width = 0.1)
+```
+
+```{r}
+library(mosaic)
+favstats(cosine~Label, data = all_data)
+favstats(cosine~Label, data = allmm_data)
+```
+
+
+
+```{r}
+counterhate <- read_csv("counterhate_clustering.csv") %>%
+  rename("xcoord" = x, "ycoord" = y) %>%
+  mutate(cluster = as.factor(cluster))
+```
+```{r}
+ggplot(data = counterhate, aes(x = xcoord, y = ycoord, color = cluster))+
+  geom_point(size = 0.5)
+```
+
+
+```{r}
+ggplot(data = counterhate, aes(x = xcoord, 
+                                   y = ycoord,
+                                   color = factor(model_minority), 
+                                   shape = factor(model_minority)))+
+  geom_point( size = 0.5)
+```
+```{r}
+hate <- read_csv("hate_clustering.csv") %>%
+  rename("xcoord" = x, "ycoord" = y) %>%
+  mutate(cluster = as.factor(cluster))
+```
+```{r}
+ggplot(data = hate, aes(x = xcoord, 
+                                   y = ycoord,
+                                   color = cluster, 
+                                   shape = cluster))+
+  geom_point(size = 0.5)
+```
+
+```{r}
+ggplot(data = hate, aes(x = xcoord, 
+                                   y = ycoord,
+                                   color = factor(yellow_peril), 
+                                   shape = factor(yellow_peril),
+                                   alpha = factor(yellow_peril)))+
+  geom_point(size = 0.5)
+```
+
+```{r}
+bat_narrative <- read_csv("bat_full.csv")
+```
+```{r}
+lab_narrative <- read_csv("lab_narrative.csv")
+```
+```{r}
+favstats(~cosine, data = all_data)
+favstats(~cosine, data = lab_narrative)
+favstats(~cosine, data = bat_narrative)
+
+ggplot(all_data, aes(y = cosine))+
+  geom_boxplot()
+
+a <- all_data %>% ungroup() %>% mutate("type" = "all") %>% select(type, cosine) 
+b <- lab_narrative %>% ungroup() %>% mutate("type" = "lab")%>% select(type, cosine) 
+c <- bat_narrative %>% ungroup() %>% mutate("type" = "bat")%>% select(type, cosine)
+
+super <- rbind(a, b, c)
+```
+
+```{r}
+ggplot(data = super, aes(x = factor(type), y = cosine, fill = factor(type)))+
+  geom_boxplot()+
+ labs(x = "type", fill = "type")
+```
+
+
+make clustering solutions for the following:
+based on hate/counterhate DONE
+find which clusters have the most narratives in their groups
+based on narrative
+
+then map specific covid narratives to historical narratives
+
+
+https://www.foreignaffairs.com/articles/united-states/2021-07-28/rivalry-without-racism?utm_medium=social&utm_campaign=tw_daily_soc&utm_source=twitter_posts
+
+
+
+
+```{r}
+yp <- all_data %>% filter(yellow_peril == 1)
+```
+
+```{r}
+test <- left_join(all_data, lab_narrative)
+```
+
+
+
+
+
+
